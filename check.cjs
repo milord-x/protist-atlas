@@ -8,7 +8,11 @@ const {chromium} = require(require.resolve('playwright', {paths:[process.cwd(),'
     page.on('pageerror', e=>errors.push(e.message));
     await page.goto(process.env.ATLAS_URL || 'http://127.0.0.1:8766');
     await page.waitForFunction(()=>window.atlas);
-    await page.locator('#rotate').click();
+    assert.equal(await page.locator('#tools, #species i').count(),0);
+    assert.equal(await page.locator('#species button').count(),3);
+    assert.equal(await page.locator('#species').evaluate(n=>getComputedStyle(n).backgroundColor),'rgba(0, 0, 0, 0)');
+    await page.locator('#scene').focus();
+    await page.keyboard.press('Space');
     for(let i=0;i<3;i++) {
       await page.locator(`[data-model="${i}"]`).click();
       await page.waitForTimeout(250);
@@ -29,17 +33,19 @@ const {chromium} = require(require.resolve('playwright', {paths:[process.cwd(),'
     const before=await page.evaluate(()=>atlas.pivot.rotation.y);
     await page.waitForTimeout(200);
     assert.equal(await page.evaluate(()=>atlas.pivot.rotation.y),before);
-    await page.locator('#rotate').click();
+    await page.locator('#scene').focus();
+    await page.keyboard.press('Space');
     await page.waitForTimeout(400);
     assert.ok(await page.evaluate(()=>atlas.pivot.rotation.y)>before);
-    await page.locator('#annotate').click();
+    await page.keyboard.press('KeyL');
     assert.equal(await page.locator('#labels').isVisible(),false);
-    await page.locator('#annotate').click();
-    await page.locator('#rotate').click();
+    await page.keyboard.press('KeyL');
+    await page.locator('#scene').focus();
+    await page.keyboard.press('Space');
     const rotation=await page.evaluate(()=>atlas.pivot.rotation.y);
     await page.mouse.move(960,500);await page.mouse.down();await page.mouse.move(1100,540,{steps:8});await page.mouse.up();
     assert.ok(Math.abs(await page.evaluate(()=>atlas.pivot.rotation.y)-rotation)>.5);
-    await page.locator('#reset').click();
+    await page.keyboard.press('KeyR');
     assert.equal(await page.evaluate(()=>atlas.pivot.rotation.y),-.12);
     await page.emulateMedia({reducedMotion:'reduce'});
     assert.equal(await page.evaluate(()=>atlas.spinning),false);

@@ -430,29 +430,19 @@ function drawLabels() {
     }
   }
 }
-function updateSpin() {
-  document.querySelector('#rotate').setAttribute('aria-pressed',String(spinning));
-  document.querySelector('#rotate').setAttribute('aria-label',spinning?'Айналуды тоқтату':'Айналдыру');
-  document.querySelector('#play-icon').setAttribute('d',spinning?'M9 6v12M15 6v12':'m9 5 10 7-10 7Z');
-}
 function toggleLabels() {
   labelsVisible=!labelsVisible;
   labelLayer.hidden=!labelsVisible;leaderLayer.style.display=labelsVisible?'':'none';
-  document.querySelector('#annotate').setAttribute('aria-pressed',String(labelsVisible));
 }
 async function fullScreen() {
   try {
     if(document.fullscreenElement)await document.exitFullscreen();
     else await document.documentElement.requestFullscreen();
   } catch(error) {
-    document.querySelector('#fullscreen').title='Браузердің толық экран режимін қолданыңыз';
+    console.warn(error);
   }
 }
 document.querySelectorAll('[data-model]').forEach(b=>b.onclick=()=>selectModel(Number(b.dataset.model)));
-document.querySelector('#rotate').onclick=()=>{spinning=!spinning;updateSpin();};
-document.querySelector('#annotate').onclick=toggleLabels;
-document.querySelector('#reset').onclick=reset;
-document.querySelector('#fullscreen').onclick=fullScreen;
 canvas.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);});
 canvas.addEventListener('pointermove',e=>{
   if(!drag)return;
@@ -467,13 +457,13 @@ canvas.addEventListener('wheel',e=>{e.preventDefault();zoom=T.MathUtils.clamp(zo
 window.addEventListener('resize',resize);
 window.addEventListener('keydown',e=>{
   if(e.target.tagName==='BUTTON'&&['Space','Enter'].includes(e.code))return;
-  if(e.code==='Space'){e.preventDefault();spinning=!spinning;updateSpin();}
+  if(e.code==='Space'){e.preventDefault();spinning=!spinning;}
   if(e.code==='KeyL')toggleLabels();
   if(e.code==='KeyR')reset();
   if(e.code==='KeyF')fullScreen();
   if(['ArrowLeft','ArrowRight'].includes(e.code)){e.preventDefault();pivot.rotation.y+=e.code==='ArrowLeft'?-.12:.12;}
 });
-reducedMotion.addEventListener('change',e=>{spinning=!e.matches;updateSpin();});
+reducedMotion.addEventListener('change',e=>{spinning=!e.matches;});
 canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();document.querySelector('#error').hidden=false;});
 canvas.addEventListener('webglcontextrestored',()=>location.reload());
 let previous=performance.now();
@@ -484,5 +474,5 @@ function animate(now) {
   drawLabels();
   requestAnimationFrame(animate);
 }
-selectModel(0);updateSpin();requestAnimationFrame(animate);
+selectModel(0);requestAnimationFrame(animate);
 window.atlas={models,pivot,renderer,camera,selectModel,get current(){return current;},get spinning(){return spinning;},get labelsVisible(){return labelsVisible;}};
